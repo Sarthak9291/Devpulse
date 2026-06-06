@@ -15,11 +15,13 @@ model User {
   updatedAt DateTime @updatedAt
 
   memberships OrganizationMember[]
+  refreshTokens RefreshToken[]
 }
 
 model Organization {
   id        Int      @id @default(autoincrement())
   name      String
+  inviteCode String @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -50,4 +52,14 @@ model OrganizationMember {
   organization Organization @relation(fields: [organizationId], references: [id])
 
   @@unique([userId, organizationId])
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }
