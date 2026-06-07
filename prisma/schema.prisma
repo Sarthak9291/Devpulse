@@ -13,6 +13,10 @@ model User {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  githubId String? @unique
+  githubUsername String?
+  githubAccessToken String?
 
   memberships OrganizationMember[]
   refreshTokens RefreshToken[]
