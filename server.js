@@ -12,7 +12,7 @@ app.use('/', healthRoute);
 app.use('/auth', authRoute);
 app.use('/orgs', authmiddleware, orgRoute);
 app.use('/repos', authmiddleware, repoRoute);
-app.use('/github', authmiddleware, githubRoute);
+app.use('/github', githubRoute);
 app.listen(3000, () => {
     console.log('Server is running on port 3000');
 });

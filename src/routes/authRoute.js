@@ -12,6 +12,13 @@ router.post('/register', registerUser)
 router.post('/login', loginUser)
 router.post('/refresh', refreshAccessToken)
 router.post('/logout', logout)
-router.post('/logout-all', logoutAll)
+const authMiddleware =
+    require('../middleware/authMiddleware');
+
+router.post(
+    '/logout-all',
+    authMiddleware,
+    logoutAll
+);
 
 module.exports = router
