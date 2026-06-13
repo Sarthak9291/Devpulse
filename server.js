@@ -7,11 +7,13 @@ const healthRoute = require('./src/routes/healthRoute');
 const authRoute = require('./src/routes/authRoute');
 const repoRoute = require('./src/routes/repoRoute');
 const githubRoute = require('./src/routes/githubRoute');
+const webhookRoute = require('./src/routes/webhookRoute');
 app.use(express.json());
 app.use('/', healthRoute);
 app.use('/auth', authRoute);
 app.use('/orgs', authmiddleware, orgRoute);
 app.use('/repos', authmiddleware, repoRoute);
+app.use('/webhooks', webhookRoute);
 app.use('/github', githubRoute);
 app.listen(3000, () => {
     console.log('Server is running on port 3000');

@@ -1,5 +1,5 @@
 const prisma = require("../config/prisma")
-const fetch = require("node-fetch")
+const {Membership} = require("../utils/repoutils")
 const generateGithubUrl = (token) => {
 
     return `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&scope=read:user repo&state=${encodeURIComponent(token)}`;
@@ -67,9 +67,81 @@ const connectGithub = async (userId, githubUser,token) => {
     return user
 }
 
+const getGithubUserRepos = async (userId) => {
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId
+        }
+    })
+    const token = user.githubAccessToken
+     if (!token) {
+        throw new Error(
+            "GitHub account not connected"
+        )
+    }
+    const response = await fetch(
+        "https://api.github.com/user/repos",
+        {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: "application/vnd.github+json"
+        }})
+        if (!response.ok) {
+        throw new Error(
+            "Failed to fetch repositories"
+        )
+    }
+    const repositories = await response.json()
+
+    return repositories;
+}
+
+const linkGithubRepository = async (
+    userId,
+    repoId,
+    githubRepoData
+) => {
+
+    const repository =
+        await prisma.repository.findUnique({
+            where: {
+                id: Number(repoId)
+            }
+        });
+
+    if (!repository) {
+        throw new Error("Repository not found");
+    }
+
+    await Membership(
+        userId,
+        repository.organizationId
+    );
+
+    const linkedRepository =
+        await prisma.repository.update({
+            where: {
+                id: Number(repoId)
+            },
+            data: {
+                githubRepoId:
+                    String(githubRepoData.githubRepoId),
+
+                githubRepoName:
+                    githubRepoData.githubRepoName,
+
+                githubRepoUrl:
+                    githubRepoData.githubRepoUrl
+            }
+        });
+
+    return linkedRepository;
+};
 module.exports = {
     generateGithubUrl,
     exchangeCodeForToken,
     getGithubUser,
-    connectGithub
+    connectGithub,
+    getGithubUserRepos,
+    linkGithubRepository
 }

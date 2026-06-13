@@ -9,7 +9,9 @@ const githubLogin = async (req, res) => {
     const url =
         githubService.generateGithubUrl(token);
 
-    return res.redirect(url);
+    return res.json({
+    url
+});
 };
 
 const githubCallback = async (req,res) => {
@@ -36,6 +38,11 @@ const githubCallback = async (req,res) => {
         const token =await githubService.exchangeCodeForToken(code);
         const githubUser =await githubService.getGithubUser(token);
         const githubConnection =await githubService.connectGithub(userId,githubUser,token);
+        const {
+                    password,
+                    githubAccessToken,
+                    ...safeUser
+                } = safeUser;
         return res.status(200).json({
             success: true,
             message:"GitHub connected successfully",
@@ -49,8 +56,52 @@ const githubCallback = async (req,res) => {
         });
     }
 };
+const getGithubUserRepos = async (req,res) => {
+    const token =
+        req.headers.authorization.split(" ")[1];
+    try {
+        const decoded =
+            verifyAccessToken(
+                token
+            );
+        const userId = decoded.id;
+        const repositories = await githubService.getGithubUserRepos(userId);
+        return res.status(200).json({
+            success: true,
+            message: "Repositories fetched successfully",
+            data: repositories
+        });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Error occurred while fetching GitHub repositories"
+        });
+    }
+};
+
+const linkGithubRepository = async (req,res) => {
+    try{
+    const repoid = req.params.repoId;
+    const linkrepo= await githubService.linkGithubRepository(req.user.id,repoid,req.body);
+    return res.status(200).json({
+        success: true,
+        message: "Repository linked successfully",
+        data: linkrepo
+    });}
+    catch(error){
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Error occurred while linking GitHub repository"
+        });
+    }
+
+};
 
 module.exports = {
     githubLogin,
-    githubCallback
+    githubCallback,
+    getGithubUserRepos,
+    linkGithubRepository
 }

@@ -77,9 +77,23 @@ const deleteRepository = async (
     });
 };
 
+const getRepositoryByGithuhbId = async (githubRepoId) => {
+    const repository = await prisma.repository.findUnique({
+        where: {
+            githubRepoId: String(githubRepoId)
+        }
+    });
+    if (!repository) {
+        throw new Error("Repository not found");
+    }
+
+    return repository;
+};
+
 module.exports = {
     createRepository,
     getOrganizationRepositories,
     getRepositoryById,
-    deleteRepository
+    deleteRepository,
+    getRepositoryByGithuhbId
 }
