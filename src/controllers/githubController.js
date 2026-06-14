@@ -38,11 +38,6 @@ const githubCallback = async (req,res) => {
         const token =await githubService.exchangeCodeForToken(code);
         const githubUser =await githubService.getGithubUser(token);
         const githubConnection =await githubService.connectGithub(userId,githubUser,token);
-        const {
-                    password,
-                    githubAccessToken,
-                    ...safeUser
-                } = safeUser;
         return res.status(200).json({
             success: true,
             message:"GitHub connected successfully",

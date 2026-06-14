@@ -1,4 +1,4 @@
-
+const primsa = require('../config/prisma');
 const createWebhookEvent= async (repositoryId,eventType,action,sender,payload) => {
 
   const webhookEvent = await prisma.webhookEvent.create({
