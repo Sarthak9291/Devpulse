@@ -46,6 +46,8 @@ model Repository {
   githubRepoName String?
   githubRepoUrl  String?
   WebhookEvents WebhookEvent[]
+  repositoryMatrics RepositoryMetrics[]
+  activities Activity[]
   @@unique([organizationId, name])
 }
 
@@ -85,4 +87,36 @@ model WebhookEvent {
   payload Json
 
   receivedAt DateTime @default(now())
+}
+
+model Activity {
+  id           Int      @id @default(autoincrement())
+
+  repositoryId Int
+  repository   Repository @relation(fields:[repositoryId], references:[id])
+
+  eventType    String
+
+  title        String
+  description  String?
+  metadata Json?
+
+  createdAt    DateTime @default(now())
+}
+
+model RepositoryMetrics {
+  id            Int @id @default(autoincrement())
+
+  repositoryId  Int @unique
+  repository    Repository @relation(fields: [repositoryId], references: [id])
+
+  pushCount     Int @default(0)
+
+  prOpenedCount Int @default(0)
+  prMergedCount Int @default(0)
+
+  issueOpenedCount Int @default(0)
+  issueClosedCount Int @default(0)
+
+  updatedAt DateTime @updatedAt
 }
