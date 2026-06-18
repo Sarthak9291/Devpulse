@@ -18,7 +18,11 @@ const webhookWorker = new Worker('webhook-processing', async (job) => {
 );
     const webhookEvent = await webhookService.createWebhookEvent(repositoryId, eventType, action, sender, payload);
     const activity = await activityService.createActivity(repositoryId, eventType, action, sender, payload);
+    const{getIO}= require('../socket/socket');
+    getIO().emit("activity-created", activity);
     await metricsService.updateMetrics(repositoryId, eventType, action, payload);
+    const metrics = await metricsService.getRepositoryMetrics(repositoryId);
+    getIO().emit("metrics-updated", {repositoryId, metrics});
      return {
             webhookEventId: webhookEvent.id,
             activityId: activity.id
