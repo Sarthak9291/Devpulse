@@ -6,6 +6,7 @@ const webhookController =
 
 router.post(
     "/github",
+    express.raw({ type: "application/json" }),
     webhookController.handleWebhookEvent
 );
 

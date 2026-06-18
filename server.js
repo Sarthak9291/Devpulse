@@ -3,6 +3,7 @@ const express= require('express');
 const http=require('http');
 const app = express();
 const server=http.createServer(app);
+require('./src/workers/webhookWorker');
 const authmiddleware = require('./src/middleware/authMiddleware');
 const orgRoute = require('./src/routes/orgRoute');
 const healthRoute = require('./src/routes/healthRoute');
@@ -24,13 +25,14 @@ startListeners().then(() => {
         console.error("Error starting Pub/Sub listeners:", err);
 });
 
-app.use(express.json());
-
 app.use('/', healthRoute);
 app.use('/auth', authRoute);
+app.use('/webhooks', webhookRoute);
+
+app.use(express.json());
+
 app.use('/orgs', authmiddleware, orgRoute);
 app.use('/repos', authmiddleware, repoRoute);
-app.use('/webhooks', webhookRoute);
 app.use('/activities', activityRoute);
 app.use('/metrics', metricsRoute);
 app.use('/dashboard', dashboardRoute);

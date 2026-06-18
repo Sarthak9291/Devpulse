@@ -9,9 +9,16 @@ const getRepositoryMetrics = async (req,res) => {
                 message: "Invalid repository id"
             });
         }
-        return await metricsService.getRepositoryMetrics(repositoryId);
+        const metrics = await metricsService.getRepositoryMetrics(repositoryId);
+        return res.status(200).json({
+            success: true,
+            data: metrics
+        });
     } catch (error) {
-        throw new Error(`Failed to retrieve metrics for repository ${repositoryId}: ${error.message}`);
+        return res.status(500).json({
+            success: false,
+            message: `Failed to retrieve metrics: ${error.message}`
+        });
     }
 }
    

@@ -14,6 +14,7 @@ const startListeners=async()=>{
             "activity-created",
             JSON.parse(message)
         );
+        }
         if(channel === "metrics-updated"){
             const io = getIO();
             const {repositoryId, metrics} = JSON.parse(message);
@@ -22,7 +23,6 @@ const startListeners=async()=>{
                 {repositoryId, metrics}
             );
         }
-    }
     });
 }
 

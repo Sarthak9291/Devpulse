@@ -117,6 +117,15 @@ model RepositoryMetrics {
 
   issueOpenedCount Int @default(0)
   issueClosedCount Int @default(0)
+  
+  totalBuilds Int @default(0)
+  successfulBuilds Int @default(0)
+  failedBuilds Int @default(0)
+
+  deploymentCount       Int @default(0)
+  successfulDeployments Int @default(0)
+  failedDeployments     Int @default(0)
+  releaseCount          Int @default(0)
 
   updatedAt DateTime @updatedAt
 }
