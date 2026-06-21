@@ -83,11 +83,60 @@ const getRepositoryByGithuhbId = async (githubRepoId) => {
             githubRepoId: String(githubRepoId)
         }
     });
-    if (!repository) {
-        throw new Error("Repository not found");
-    }
-
     return repository;
+};
+
+const compareRepositories = async (userId, repoAId, repoBId) => {
+    const { getRepositoryMetrics } = require("./metricsService");
+    const { getRepositoryDoraMetrics } = require("./doraService");
+    const { getRepositoryHealth } = require("./healthService");
+    const { getRepositoryPRBottlenecks } = require("./prAnalyticsService");
+
+    const repoA = await getRepositoryById(userId, repoAId);
+    const repoB = await getRepositoryById(userId, repoBId);
+
+    const [metricsA, metricsB, doraA, doraB, bottlenecksA, bottlenecksB] = await Promise.all([
+        getRepositoryMetrics(repoAId),
+        getRepositoryMetrics(repoBId),
+        getRepositoryDoraMetrics(repoAId),
+        getRepositoryDoraMetrics(repoBId),
+        getRepositoryPRBottlenecks(repoAId),
+        getRepositoryPRBottlenecks(repoBId)
+    ]);
+
+    const [healthA, healthB] = await Promise.all([
+        getRepositoryHealth(repoAId),
+        getRepositoryHealth(repoBId)
+    ]);
+
+    const issueResolutionRateA = metricsA.issueOpenedCount === 0 
+        ? 100 
+        : Number(((metricsA.issueClosedCount / metricsA.issueOpenedCount) * 100).toFixed(2));
+    
+    const issueResolutionRateB = metricsB.issueOpenedCount === 0 
+        ? 100 
+        : Number(((metricsB.issueClosedCount / metricsB.issueOpenedCount) * 100).toFixed(2));
+
+    return {
+        repoA: {
+            id: repoA.id,
+            name: repoA.name,
+            healthScore: healthA.score,
+            deploymentFrequency: doraA.deploymentFrequency,
+            buildSuccessRate: doraA.buildSuccessRate,
+            prVelocity: bottlenecksA.averageMergeTime,
+            issueResolutionRate: issueResolutionRateA
+        },
+        repoB: {
+            id: repoB.id,
+            name: repoB.name,
+            healthScore: healthB.score,
+            deploymentFrequency: doraB.deploymentFrequency,
+            buildSuccessRate: doraB.buildSuccessRate,
+            prVelocity: bottlenecksB.averageMergeTime,
+            issueResolutionRate: issueResolutionRateB
+        }
+    };
 };
 
 module.exports = {
@@ -95,5 +144,6 @@ module.exports = {
     getOrganizationRepositories,
     getRepositoryById,
     deleteRepository,
-    getRepositoryByGithuhbId
+    getRepositoryByGithuhbId,
+    compareRepositories
 }

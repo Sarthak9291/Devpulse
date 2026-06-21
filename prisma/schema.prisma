@@ -48,6 +48,8 @@ model Repository {
   WebhookEvents WebhookEvent[]
   repositoryMatrics RepositoryMetrics[]
   activities Activity[]
+  pullRequestAnalytics PullRequestAnalytics[]
+  deploymentAnalytics DeploymentAnalytics[]
   @@unique([organizationId, name])
 }
 
@@ -128,4 +130,26 @@ model RepositoryMetrics {
   releaseCount          Int @default(0)
 
   updatedAt DateTime @updatedAt
+}
+
+model PullRequestAnalytics {
+  id             Int        @id @default(autoincrement())
+  repositoryId   Int
+  repository     Repository @relation(fields: [repositoryId], references: [id])
+  githubPrId     String     @unique
+  openedAt       DateTime
+  mergedAt       DateTime?
+  firstReviewedAt DateTime?
+  reviewDuration Int?
+  createdAt      DateTime   @default(now())
+}
+
+model DeploymentAnalytics {
+  id                 Int        @id @default(autoincrement())
+  repositoryId       Int
+  repository         Repository @relation(fields: [repositoryId], references: [id])
+  githubDeploymentId String     @unique
+  environment        String?
+  status             String
+  createdAt          DateTime   @default(now())
 }

@@ -6,7 +6,7 @@ const {
 } = require("../controllers/activityController");
 
 
-router.get("/:orgId/:repositoryId", getRepositoryActivities);
-router.get("/:orgId", getOrganizationActivities);
+router.get("/:repositoryId", getRepositoryActivities);
+router.get("/org/:organizationId", getOrganizationActivities);
 
 module.exports = router;

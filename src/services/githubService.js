@@ -36,7 +36,9 @@ const getGithubUser = async (token) => {
         "https://api.github.com/user",
         {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}`,
+                "User-Agent": "DevPulse-App",
+                Accept: "application/vnd.github+json"
             }
         }
     );
@@ -72,29 +74,71 @@ const getGithubUserRepos = async (userId) => {
         where: {
             id: userId
         }
-    })
-    const token = user.githubAccessToken
-     if (!token) {
+    });
+    if (!user) {
+        throw new Error("User not found");
+    }
+    const token = user.githubAccessToken;
+    if (!token) {
         throw new Error(
             "GitHub account not connected"
-        )
+        );
     }
-    const response = await fetch(
-        "https://api.github.com/user/repos",
-        {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: "application/vnd.github+json"
-        }})
+
+    let repositories = [];
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore && page <= 10) {
+        const response = await fetch(
+            `https://api.github.com/user/repos?per_page=100&page=${page}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    Accept: "application/vnd.github+json",
+                    "User-Agent": "DevPulse-App"
+                }
+            }
+        );
+
         if (!response.ok) {
-        throw new Error(
-            "Failed to fetch repositories"
-        )
+            throw new Error("Failed to fetch repositories from GitHub");
+        }
+
+        const data = await response.json();
+        if (data.length === 0) {
+            hasMore = false;
+        } else {
+            repositories = repositories.concat(data);
+            if (data.length < 100) {
+                hasMore = false;
+            } else {
+                page++;
+            }
+        }
     }
-    const repositories = await response.json()
 
     return repositories;
-}
+};
+
+const getGithubStatus = async (userId) => {
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId
+        },
+        select: {
+            githubAccessToken: true,
+            githubUsername: true
+        }
+    });
+    if (!user) {
+        throw new Error("User not found");
+    }
+    return {
+        connected: !!user.githubAccessToken,
+        username: user.githubUsername || null
+    };
+};
 
 const linkGithubRepository = async (
     userId,
@@ -143,5 +187,6 @@ module.exports = {
     getGithubUser,
     connectGithub,
     getGithubUserRepos,
-    linkGithubRepository
+    linkGithubRepository,
+    getGithubStatus
 }

@@ -71,9 +71,39 @@ const deleteRepository=async (req, res) => {
     }
 }
 
+const compareRepositories = async (req, res) => {
+    try {
+        const repoAId = Number(req.query.repoA);
+        const repoBId = Number(req.query.repoB);
+        const userId = req.user.id;
+
+        if (!repoAId || !repoBId || isNaN(repoAId) || isNaN(repoBId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Repository IDs repoA and repoB are required and must be valid numbers"
+            });
+        }
+
+        const comparison = await repoService.compareRepositories(userId, repoAId, repoBId);
+
+        res.status(200).json({
+            success: true,
+            message: "Repository comparison retrieved successfully",
+            data: comparison
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: "Failed to compare repositories",
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     createRepository,
     getOrganizationRepositories,
     getRepositoryById,
-    deleteRepository
+    deleteRepository,
+    compareRepositories
 }

@@ -43,7 +43,7 @@ const getRepositoryDashboard=async(userid,repositoryId)=>{
         metrics: safeMetrics,
         buildSuccessRate,
         deploymentSuccessRate,
-        health: getRepositoryHealth(safeMetrics),
+        health: await getRepositoryHealth(repositoryId),
         recentActivities:
             activities.slice(0, 10)
     };
