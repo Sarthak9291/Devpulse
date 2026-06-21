@@ -162,6 +162,11 @@ const linkGithubRepository = async (
         repository.organizationId
     );
 
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { githubAccessToken: true }
+    });
+
     const linkedRepository =
         await prisma.repository.update({
             where: {
@@ -178,6 +183,52 @@ const linkGithubRepository = async (
                     githubRepoData.githubRepoUrl
             }
         });
+
+    const backendUrl = process.env.BACKEND_URL;
+    if (backendUrl && user?.githubAccessToken) {
+        try {
+            const cleanPath = githubRepoData.githubRepoUrl.replace("https://github.com/", "");
+            const urlParts = cleanPath.split("/").filter(Boolean);
+            const owner = urlParts[0];
+            const repo = urlParts[1];
+            
+            const webhookUrl = `${backendUrl.replace(/\/$/, "")}/webhooks/github`;
+            const secret = process.env.GITHUB_WEBHOOK_SECRET || 'testsecret';
+            
+            console.log(`Automatically registering GitHub webhook for ${owner}/${repo} to ${webhookUrl}...`);
+            const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/hooks`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `token ${user.githubAccessToken}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.github.v3+json',
+                    'User-Agent': 'DevPulse-App'
+                },
+                body: JSON.stringify({
+                    name: 'web',
+                    active: true,
+                    events: ['push', 'pull_request', 'workflow_run', 'deployment', 'deployment_status', 'pull_request_review'],
+                    config: {
+                        url: webhookUrl,
+                        content_type: 'json',
+                        secret: secret,
+                        insecure_ssl: '0'
+                    }
+                })
+            });
+            
+            if (response.ok) {
+                console.log(`Successfully registered GitHub webhook for ${owner}/${repo}`);
+            } else {
+                const errText = await response.text();
+                console.error(`Failed to register GitHub webhook: ${response.status} ${response.statusText} - ${errText}`);
+            }
+        } catch (err) {
+            console.error("Error registering webhook on GitHub:", err.message);
+        }
+    } else {
+        console.log("BACKEND_URL or user token not available. Skipping automatic GitHub webhook registration.");
+    }
 
     return linkedRepository;
 };

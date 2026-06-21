@@ -108,3 +108,4 @@ FRONTEND_URL=http://localhost:5173  # Or your production domain
 - Auth state preserved - user stays logged in after OAuth
 - Works with existing GitHub API integration
 - Ready for production - just update FRONTEND_URL to production domain
+<!-- Webhook verification comment -->
