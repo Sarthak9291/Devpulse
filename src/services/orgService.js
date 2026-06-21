@@ -151,6 +151,48 @@ const leaveOrganization = async (
     });
 };
 
+const deleteOrganization = async (userId, organizationId) => {
+    const orgId = Number(organizationId);
+
+    // Verify requester is a member of the organization
+    const membership = await prisma.organizationMember.findUnique({
+        where: {
+            userId_organizationId: {
+                userId,
+                organizationId: orgId
+            }
+        }
+    });
+
+    if (!membership) {
+        throw new Error('Forbidden: requester is not a member of this organization');
+    }
+
+    // Fetch all repositories of this organization
+    const repos = await prisma.repository.findMany({
+        where: { organizationId: orgId }
+    });
+
+    // Delete all child data for each repository, then delete repository
+    for (const repo of repos) {
+        await prisma.webhookEvent.deleteMany({ where: { repositoryId: repo.id } });
+        await prisma.repositoryMetrics.deleteMany({ where: { repositoryId: repo.id } });
+        await prisma.activity.deleteMany({ where: { repositoryId: repo.id } });
+        await prisma.pullRequestAnalytics.deleteMany({ where: { repositoryId: repo.id } });
+        await prisma.deploymentAnalytics.deleteMany({ where: { repositoryId: repo.id } });
+        await prisma.repository.delete({ where: { id: repo.id } });
+    }
+
+    // Delete all members
+    await prisma.organizationMember.deleteMany({
+        where: { organizationId: orgId }
+    });
+
+    // Delete organization itself
+    return prisma.organization.delete({
+        where: { id: orgId }
+    });
+};
 
 module.exports = {
     createOrganization,
@@ -158,5 +200,6 @@ module.exports = {
     getMyOrganizations,
     getOrganizationById,
     getOrganizationMembers,
-    leaveOrganization
+    leaveOrganization,
+    deleteOrganization
 };
