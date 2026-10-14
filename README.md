@@ -2,7 +2,7 @@
 
 DevPulse is a GitHub-focused engineering analytics and team visibility platform built for organizations that want better insight into development activity, repository health, and delivery performance.
 
-It brings together repository metadata, GitHub events, CI/CD activity, deployment signals, and AI-powered summaries into a single operational dashboard.
+It brings together repository metadata, GitHub events, CI/CD activity, deployment signals, and automated engineering insights into a single operational dashboard.
 
 ## Overview
 
@@ -11,7 +11,7 @@ DevPulse helps engineering teams:
 - monitor pull request and deployment performance
 - surface engineering metrics from GitHub webhooks
 - visualize delivery health across teams and repositories
-- get AI-assisted insights from repository and workflow data
+- get automated, rule-based insights from repository and workflow data
 - keep project activity visible through a live dashboard
 
 ## Features
@@ -23,7 +23,7 @@ DevPulse helps engineering teams:
 - Redis + BullMQ background job handling
 - Socket.IO live dashboard updates
 - Deployment, PR, and activity analytics
-- AI service integration for summaries and insights
+- Automated metrics summaries and rule-based recommendations
 - Responsive frontend built with React + Vite
 
 ## Tech Stack
@@ -217,7 +217,7 @@ Possible next steps for the project:
 - stronger CI/CD checks with GitHub Actions
 - automated tests for controllers and services
 - performance optimization for analytics queries
-- richer AI insights and summarization
+- optional integration with a verified generative AI provider for richer summaries
 - team-level dashboards and RBAC
 - deployment pipeline and observability tools
 
