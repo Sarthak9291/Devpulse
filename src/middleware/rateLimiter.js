@@ -2,7 +2,16 @@ const redisConnection = require('../config/redis');
 
 const rateLimiter = (limit = 100, windowSecs = 60) => {
     return async (req, res, next) => {
-        const ip = req.ip || req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        // Bypass rate limiting for liveness/readiness probes
+        if (req.path === '/health') {
+            return next();
+        }
+
+        const forwarded = req.headers['x-forwarded-for'];
+        const ip = (typeof forwarded === 'string' ? forwarded.split(',')[0].trim() : null) 
+            || req.ip 
+            || req.socket.remoteAddress 
+            || 'unknown';
         const key = `ratelimit:${ip}`;
         const now = Date.now();
         const clearBefore = now - (windowSecs * 1000);

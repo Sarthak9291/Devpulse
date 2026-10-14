@@ -1,4 +1,7 @@
-const BASE_URL = 'http://localhost:3000';
+const rawUrl = import.meta.env.VITE_API_URL;
+const BASE_URL = rawUrl 
+    ? rawUrl.replace(/\/$/, '') 
+    : (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:3000' : '');
 
 // Simple API helper with token management
 export const getAuthHeaders = () => {
